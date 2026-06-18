@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gengoscript is a host-embedded scripting language for user-defined logic under explicit host control, with named types, capability-gated integration, and bounded execution.">
+    <link rel="canonical" href="https://gengoscript.org/">
+    <meta property="og:title" content="Gengoscript — Embeddable Scripting Language for Host-Controlled User Logic">
+    <meta property="og:description" content="Host-embedded scripting for user-defined logic under explicit host control, with named types, capability-gated integration, and bounded execution.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gengoscript.org/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Gengoscript — Embeddable Scripting Language for Host-Controlled User Logic">
+    <meta name="twitter:description" content="Host-embedded scripting for user-defined logic under explicit host control, with named types, capability-gated integration, and bounded execution.">
+    <title>Gengoscript — Embeddable Scripting Language for Host-Controlled User Logic</title>
+    <style>
+        :root {
+            --bg: #fbfaf6;
+            --fg: #161616;
+            --accent: #6b6f7a;
+            --code-bg: #f4f1eb;
+            --border: #1f2d3d;
+            --syntax-keyword: #9a2f5d;
+            --syntax-type: #245f88;
+            --syntax-string: #1f6a4f;
+            --syntax-comment: #7a7f8a;
+            --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        [data-theme="dark"] {
+            --bg: #101316;
+            --fg: #edf1f5;
+            --accent: #9aa6b2;
+            --code-bg: #151b22;
+            --border: #7fb3d5;
+            --syntax-keyword: #ff7aa2;
+            --syntax-type: #7cc7ff;
+            --syntax-string: #7ee0a7;
+            --syntax-comment: #7f8a96;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --bg: #101316;
+                --fg: #edf1f5;
+                --accent: #9aa6b2;
+                --code-bg: #151b22;
+                --border: #7fb3d5;
+                --syntax-keyword: #ff7aa2;
+                --syntax-type: #7cc7ff;
+                --syntax-string: #7ee0a7;
+                --syntax-comment: #7f8a96;
+            }
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-sans);
+            line-height: 1.5;
+            color: var(--fg);
+            background:
+                radial-gradient(circle at top left, rgba(127, 179, 213, 0.10), transparent 28rem),
+                radial-gradient(circle at top right, rgba(154, 47, 93, 0.06), transparent 24rem),
+                var(--bg);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            text-rendering: optimizeLegibility;
+            overflow-x: hidden;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 5rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        h1 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem 1.25rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--fg);
+            border-bottom: 1px solid transparent;
+        }
+
+        nav a:hover {
+            border-bottom: 1px solid var(--fg);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--fg);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--fg);
+            color: var(--bg);
+        }
+
+        section {
+            margin-bottom: 5rem;
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            section {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .section-label {
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--fg);
+        }
+
+        .section-content {
+            font-size: 1rem;
+            min-width: 0;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 1.5rem 0;
+            line-height: 1.2;
+        }
+
+        p {
+            margin: 0 0 1.5rem 0;
+            max-width: 60ch;
+        }
+
+        .hero-text {
+            font-size: 1.5rem;
+            line-height: 1.3;
+            font-weight: 500;
+            margin-bottom: 2rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem 2rem;
+        }
+
+        @media (max-width: 600px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                padding: 2.5rem 1rem;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+                margin-bottom: 3rem;
+            }
+
+            nav {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                width: 100%;
+                gap: 0.75rem;
+            }
+
+            nav a,
+            .theme-toggle {
+                margin: 0;
+                width: 100%;
+                text-align: center;
+                padding: 0.5rem 0.75rem;
+                border: 1px solid var(--border);
+            }
+
+            pre {
+                padding: 1rem;
+                font-size: 0.78rem;
+            }
+        }
+
+        .feature h3 {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .feature p {
+            font-size: 0.95rem;
+            color: var(--accent);
+            margin: 0;
+        }
+
+        pre {
+            background: var(--code-bg);
+            padding: 2rem;
+            margin: 0 0 2rem 0;
+            overflow-x: auto;
+            max-width: 100%;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            border-left: 2px solid var(--border);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        code {
+            font-family: inherit;
+        }
+
+        footer {
+            margin-top: 8rem;
+            padding-top: 2rem;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--accent);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .cta {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--fg);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+
+        .cta:hover {
+            background: var(--fg);
+            color: var(--bg);
+        }
+
+        .doc-link {
+            text-decoration: underline;
+            color: inherit;
+            text-underline-offset: 4px;
+        }
+
+        /* Syntax Highlighting */
+        .k { font-weight: 700; color: var(--syntax-keyword); } /* Keyword */
+        .t { font-weight: 700; color: var(--syntax-type); } /* Type */
+        .s { color: var(--syntax-string); } /* String */
+        .c { color: var(--syntax-comment); font-style: italic; } /* Comment */
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Gengoscript</h1>
+        <nav>
+            <a href="https://github.com/gengoscript/gengo">Source</a>
+            <a href="https://github.com/gengoscript/gengo/releases">Releases</a>
+            <a href="https://docs.gengoscript.org">Docs</a>
+            <a href="https://playground.gengoscript.org">Playground</a>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">SYSTEM</button>
+        </nav>
+    </header>
+
+    <script>
+        const toggle = document.getElementById('theme-toggle');
+        const root = document.documentElement;
+        const systemQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        const getTheme = () => localStorage.getItem('theme') || 'auto';
+        
+        const updateToggleLabel = (theme) => {
+            if (theme === 'auto') {
+                const effective = systemQuery.matches ? 'DARK' : 'LIGHT';
+                toggle.textContent = `SYSTEM (${effective})`;
+            } else {
+                toggle.textContent = theme.toUpperCase();
+            }
+        };
+
+        const setTheme = (theme) => {
+            if (theme === 'auto') {
+                root.removeAttribute('data-theme');
+            } else {
+                root.setAttribute('data-theme', theme);
+            }
+            updateToggleLabel(theme);
+            localStorage.setItem('theme', theme);
+        };
+
+        toggle.addEventListener('click', () => {
+            const current = getTheme();
+            if (current === 'auto') setTheme('light');
+            else if (current === 'light') setTheme('dark');
+            else setTheme('auto');
+        });
+
+        systemQuery.addEventListener('change', () => {
+            if (getTheme() === 'auto') updateToggleLabel('auto');
+        });
+
+        // Initialize
+        setTheme(getTheme());
+    </script>
+
+    <main>
+        <section id="name">
+            <div class="section-label">Name</div>
+            <div class="section-content">
+                <p class="hero-text">gengoscript — an embeddable scripting language for user-defined logic without ambient machine access.</p>
+                <p>Go-influenced syntax, explicit imports, and host-controlled capabilities.</p>
+            </div>
+        </section>
+
+        <section id="synopsis">
+            <div class="section-label">Synopsis</div>
+            <div class="section-content">
+                <pre><code>std := <span class="k">import</span>(<span class="s">"std"</span>)
+
+<span class="k">type</span> Quantity  <span class="t">int</span>   <span class="k">range</span> 1..999
+<span class="k">type</span> UnitPrice <span class="t">float</span> <span class="k">range</span> 0.01..9999.99
+<span class="k">type</span> Discount  <span class="t">int</span>   <span class="k">range</span> 0..100
+<span class="k">type</span> LineTotal <span class="t">float</span> <span class="k">range</span> 0.0..999999.99
+<span class="k">subtype</span> BulkDiscount Discount <span class="k">range</span> 5..40
+
+<span class="k">func</span> line_total(qty Quantity, price UnitPrice, disc Discount) LineTotal {
+    q := <span class="t">float</span>(qty)
+    p := <span class="t">float</span>(price)
+    d := <span class="t">float</span>(disc)
+    <span class="k">return</span> LineTotal(q * p * (1.0 - d / 100.0))
+}
+
+total := line_total(
+    Quantity(12),
+    UnitPrice(49.95),
+    BulkDiscount(15),
+)
+std.io.printf(<span class="s">"total: %.2f\n"</span>, <span class="t">float</span>(total))</code></pre>
+            </div>
+        </section>
+
+        <section id="description">
+            <div class="section-label">Description</div>
+            <div class="section-content">
+                <p>Gengoscript is a host-embedded language for running untrusted or user-supplied scripts under explicit host control. Scripts get language utilities through <code>std</code>, but filesystem, network, and host integration are available only if the embedding application grants them.</p>
+                <p>Each runtime instance is isolated and host-configured. The host decides which capability modules and host modules exist, whether script I/O is enabled, and what instruction, heap, stack, and frame limits apply to execution.</p>
+                <div class="features-grid">
+                    <div class="feature">
+                        <h3>Capabilities</h3>
+                        <p>Filesystem, HTTP, and other system access are opt-in. Scripts can import only the capability and host modules the application exposes.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>Nominal Types</h3>
+                        <p>Domain rules live in the script itself. Range types, predicates, and subtypes let values fail at construction instead of later in host-side validation.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>Embedding</h3>
+                        <p>Embed from Zig through the runtime API or from other hosts through the C-compatible engine surface. Load a script once, call exported functions from your request loop, or drive the engine directly through calls such as <code>engine_run</code> and <code>engine_call</code>.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>Bounded Execution</h3>
+                        <p>Instruction budgets, heap limits, stack limits, and per-instance isolation let hosts bound script cost and failure scope.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="quickstart">
+            <div class="section-label">Quickstart</div>
+            <div class="section-content">
+                <p>Install from the published artifacts on <a href="https://github.com/gengoscript/gengo/releases" class="doc-link">GitHub Releases</a>, or build the CLI from source when you want the latest tree. Gengoscript requires Zig 0.16.0 for source builds.</p>
+                <p>Use the native CLI for local development and REPL work. Build the WASI target when you want the WebAssembly runtime described in the docs, or when you want to run the CLI through <code>wasmtime</code>.</p>
+                <pre><code><span class="c"># Build CLI from source</span>
+zig build -Dpreset=dev cli
+
+<span class="c"># Build WASI runtime</span>
+zig build -Dpreset=dev wasi
+
+<span class="c"># Execute</span>
+./zig-out/bin/gengo script.gengo
+
+<span class="c"># Run the WASI build with wasmtime</span>
+wasmtime --dir . ./build/gengo-cli.wasm -- script.gengo</code></pre>
+                <p>Installation is documented through published artifacts and explicit build steps, not remote shell bootstrap scripts.</p>
+                <p>Use the <a href="https://playground.gengoscript.org" class="doc-link">Gengoscript Playground</a> for a quick feel, then read the <a href="https://docs.gengoscript.org" class="doc-link">docs</a> for the language, embedding model, engine API, and security controls.</p>
+                <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <a href="https://github.com/gengoscript/gengo" class="cta">View on GitHub</a>
+                    <a href="https://playground.gengoscript.org" class="cta" style="background: transparent; color: var(--fg);">Open Playground</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <span>Gengoscript</span>
+        <a href="https://github.com/gengoscript/gengo/blob/main/LICENSE" class="doc-link">MIT License</a>
+    </footer>
+</body>
+</html>
