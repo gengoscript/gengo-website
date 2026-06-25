@@ -178,6 +178,44 @@
             gap: 3rem 2rem;
         }
 
+        .examples-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .example-card {
+            border: 1px solid rgba(31, 45, 61, 0.12);
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        [data-theme="dark"] .example-card {
+            border-color: rgba(127, 179, 213, 0.28);
+            background: rgba(21, 27, 34, 0.34);
+        }
+
+        .example-card h3 {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .example-card p {
+            color: var(--accent);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .example-card pre {
+            margin: 0;
+            padding: 1.25rem;
+            font-size: 0.82rem;
+        }
+
         @media (max-width: 600px) {
             .features-grid {
                 grid-template-columns: 1fr;
@@ -345,42 +383,57 @@
         <section id="name">
             <div class="section-label">Name</div>
             <div class="section-content">
-                <p class="hero-text">gengoscript — an embeddable scripting language for user-defined logic without ambient machine access.</p>
-                <p>Go-influenced syntax, explicit imports, and host-controlled capabilities.</p>
+                <p class="hero-text">gengoscript — an embeddable scripting language for host applications that need user-defined logic without ambient machine access.</p>
+                <p>Constraints live in the language, bad values fail at construction, and system access exists only when the host exposes it.</p>
             </div>
         </section>
 
         <section id="synopsis">
             <div class="section-label">Synopsis</div>
             <div class="section-content">
-                <pre><code>std := <span class="k">import</span>(<span class="s">"std"</span>)
+                <p>Gengoscript gives hosts constrained domain values, explicit imports, and user-defined logic that can reach only the capabilities the host exposes.</p>
+                <pre><code><span class="k">type</span> Port <span class="t">int</span> <span class="k">range</span> 1..65535
+<span class="k">type</span> Hour <span class="t">int</span> <span class="k">cycle</span> 0..23
 
-<span class="k">type</span> Quantity  <span class="t">int</span>   <span class="k">range</span> 1..999
-<span class="k">type</span> UnitPrice <span class="t">float</span> <span class="k">range</span> 0.01..9999.99
-<span class="k">type</span> Discount  <span class="t">int</span>   <span class="k">range</span> 0..100
-<span class="k">type</span> LineTotal <span class="t">float</span> <span class="k">range</span> 0.0..999999.99
-<span class="k">subtype</span> BulkDiscount Discount <span class="k">range</span> 5..40
-
-<span class="k">func</span> line_total(qty Quantity, price UnitPrice, disc Discount) LineTotal {
-    q := <span class="t">float</span>(qty)
-    p := <span class="t">float</span>(price)
-    d := <span class="t">float</span>(disc)
-    <span class="k">return</span> LineTotal(q * p * (1.0 - d / 100.0))
+<span class="k">pub func</span> allow(port <span class="t">int</span>, hour <span class="t">int</span>) <span class="t">bool</span> {
+    p := Port(port)
+    h := Hour(hour)
+    <span class="k">return</span> p == Port(443) <span class="k">and</span> h >= Hour(8) <span class="k">and</span> h <= Hour(18)
+}
+                </code></pre>
+                <div class="examples-grid">
+                    <div class="example-card">
+                        <h3>Domain Rules</h3>
+                        <p>Make invalid values fail where they enter the script instead of leaking further into host-side code.</p>
+                        <pre><code><span class="k">type</span> Discount <span class="t">int</span> <span class="k">range</span> 0..100
+sale := Discount(15)</code></pre>
+                    </div>
+                    <div class="example-card">
+                        <h3>Policy Logic</h3>
+                        <p>Decision logic can carry domain constraints directly instead of relying on the host to validate every input first.</p>
+                        <pre><code><span class="k">type</span> EventCode <span class="t">int</span> <span class="k">predicate</span> <span class="k">func</span>(x) {
+    <span class="k">return</span> x % 2 == 0
 }
 
-total := line_total(
-    Quantity(12),
-    UnitPrice(49.95),
-    BulkDiscount(15),
-)
-std.io.printf(<span class="s">"total: %.2f\n"</span>, <span class="t">float</span>(total))</code></pre>
+<span class="k">pub func</span> accept(code <span class="t">int</span>, source <span class="t">string</span>) <span class="t">bool</span> {
+    c := EventCode(code)
+    <span class="k">return</span> c == EventCode(42) <span class="k">and</span> source == <span class="s">"sensor-a"</span>
+}</code></pre>
+                    </div>
+                    <div class="example-card">
+                        <h3>Host-Granted Access</h3>
+                        <p>Imports are explicit. Filesystem, HTTP, and host modules exist only when the embedding application exposes them.</p>
+                        <pre><code>http := <span class="k">import</span>(<span class="s">"cap:http"</span>)
+resp, err := http.get(<span class="s">"https://example.com/data"</span>)</code></pre>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section id="description">
             <div class="section-label">Description</div>
             <div class="section-content">
-                <p>Gengoscript is a host-embedded language for running untrusted or user-supplied scripts under explicit host control. Scripts get language utilities through <code>std</code>, but filesystem, network, and host integration are available only if the embedding application grants them.</p>
+                <p>Gengoscript is a host-embedded language for running untrusted or user-supplied scripts under explicit host control. Scripts get language utilities through <code>std</code>, but filesystem, network, and host integration exist only if the embedding application grants them.</p>
                 <p>Each runtime instance is isolated and host-configured. The host decides which capability modules and host modules exist, whether script I/O is enabled, and what instruction, heap, stack, and frame limits apply to execution.</p>
                 <div class="features-grid">
                     <div class="feature">
@@ -389,15 +442,15 @@ std.io.printf(<span class="s">"total: %.2f\n"</span>, <span class="t">float</spa
                     </div>
                     <div class="feature">
                         <h3>Nominal Types</h3>
-                        <p>Domain rules live in the script itself. Range types, predicates, and subtypes let values fail at construction instead of later in host-side validation.</p>
+                        <p>Domain rules live in the script itself. Range types, predicates, and subtypes let bad values fail at construction instead of later in host-side validation.</p>
                     </div>
                     <div class="feature">
                         <h3>Embedding</h3>
-                        <p>Embed from Zig through the runtime API or from other hosts through the C-compatible engine surface. Load a script once, call exported functions from your request loop, or drive the engine directly through calls such as <code>engine_run</code> and <code>engine_call</code>.</p>
+                        <p>Embed from Zig through the runtime API or from other hosts through the C-compatible engine surface. Load a script, call exported functions, or drive the engine directly through calls such as <code>engine_run</code> and <code>engine_call</code>.</p>
                     </div>
                     <div class="feature">
                         <h3>Bounded Execution</h3>
-                        <p>Instruction budgets, heap limits, stack limits, and per-instance isolation let hosts bound script cost and failure scope.</p>
+                        <p>Instruction budgets, heap limits, stack limits, and per-instance isolation let hosts bound script cost and contain failure scope.</p>
                     </div>
                 </div>
             </div>
@@ -409,10 +462,10 @@ std.io.printf(<span class="s">"total: %.2f\n"</span>, <span class="t">float</spa
                 <p>Install from the published artifacts on <a href="https://github.com/gengoscript/gengo/releases" class="doc-link">GitHub Releases</a>, or build the CLI from source when you want the latest tree. Gengoscript requires Zig 0.16.0 for source builds.</p>
                 <p>Use the native CLI for local development and REPL work. Build the WASI target when you want the WebAssembly runtime described in the docs, or when you want to run the CLI through <code>wasmtime</code>.</p>
                 <pre><code><span class="c"># Build CLI from source</span>
-zig build -Dpreset=dev cli
+zig build -Dpreset=1m cli
 
 <span class="c"># Build WASI runtime</span>
-zig build -Dpreset=dev wasi
+zig build -Dpreset=1m wasi
 
 <span class="c"># Execute</span>
 ./zig-out/bin/gengo script.gengo
@@ -420,7 +473,7 @@ zig build -Dpreset=dev wasi
 <span class="c"># Run the WASI build with wasmtime</span>
 wasmtime --dir . ./build/gengo-cli.wasm -- script.gengo</code></pre>
                 <p>Installation is documented through published artifacts and explicit build steps, not remote shell bootstrap scripts.</p>
-                <p>Use the <a href="https://playground.gengoscript.org" class="doc-link">Gengoscript Playground</a> for a quick feel, then read the <a href="https://docs.gengoscript.org" class="doc-link">docs</a> for the language, embedding model, engine API, and security controls.</p>
+                <p>Start with the <a href="https://playground.gengoscript.org" class="doc-link">Playground</a> for a quick feel, the <a href="https://docs.gengoscript.org" class="doc-link">docs</a> for the language and embedding model, or <a href="https://github.com/gengoscript/gengo" class="doc-link">GitHub</a> for the source tree and releases.</p>
                 <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
                     <a href="https://github.com/gengoscript/gengo" class="cta">View on GitHub</a>
                     <a href="https://playground.gengoscript.org" class="cta" style="background: transparent; color: var(--fg);">Open Playground</a>
