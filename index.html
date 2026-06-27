@@ -392,25 +392,26 @@
             <div class="section-label">Synopsis</div>
             <div class="section-content">
                 <p>Gengoscript gives hosts constrained domain values, explicit imports, and user-defined logic that can reach only the capabilities the host exposes.</p>
-                <pre><code><span class="k">type</span> Port <span class="t">int</span> <span class="k">range</span> 1..65535
+                <pre><code>std := <span class="k">import</span>(<span class="s">"std"</span>)
+
+<span class="k">type</span> Port <span class="t">int</span> <span class="k">range</span> 1..65535
 <span class="k">type</span> Hour <span class="t">int</span> <span class="k">cycle</span> 0..23
-<span class="k">type</span> RetryCount <span class="t">int</span> <span class="k">predicate</span> <span class="k">func</span>(n) {
-    <span class="k">return</span> n >= 0 <span class="k">and</span> n <= 5
+<span class="k">type</span> SourceId <span class="t">string</span> <span class="k">predicate</span> <span class="k">func</span>(s) {
+    <span class="k">return</span> std.string.starts_with(s, <span class="s">"sensor-"</span>)
 }
 
 <span class="k">pub func</span> allow(
     raw_port <span class="t">int</span>,
     raw_hour <span class="t">int</span>,
-    raw_retries <span class="t">int</span>,
+    raw_source <span class="t">string</span>,
 ) <span class="t">bool</span> {
     port := Port(raw_port)
     hour := Hour(raw_hour)
-    retries := RetryCount(raw_retries)
+    source := SourceId(raw_source)
     <span class="k">return</span> port == Port(443)
         <span class="k">and</span> hour >= Hour(8)
-        <span class="k">and</span> retries <= RetryCount(2)
-}
-                </code></pre>
+        <span class="k">and</span> source == SourceId(<span class="s">"sensor-a"</span>)
+}</code></pre>
                 <div class="examples-grid">
                     <div class="example-card">
                         <h3>Domain Rules</h3>
