@@ -395,22 +395,33 @@
                 <pre><code>std := <span class="k">import</span>(<span class="s">"std"</span>)
 
 <span class="k">type</span> Port <span class="t">int</span> <span class="k">range</span> 1..65535
-<span class="k">type</span> Hour <span class="t">int</span> <span class="k">cycle</span> 0..23
-<span class="k">type</span> SourceId <span class="t">string</span> <span class="k">predicate</span> <span class="k">func</span>(s) {
-    <span class="k">return</span> std.string.starts_with(s, <span class="s">"sensor-"</span>)
+<span class="k">type</span> Region <span class="t">string</span> <span class="k">predicate</span> <span class="k">func</span>(s) {
+    <span class="k">return</span> s == <span class="s">"eu-west"</span> <span class="k">or</span> s == <span class="s">"us-east"</span>
+}
+<span class="k">type</span> RolloutPercent <span class="t">int</span> <span class="k">range</span> 0..100
+<span class="k">type</span> Decision <span class="t">variant</span> {
+    allow,
+    deny(reason <span class="t">string</span>),
 }
 
-<span class="k">pub func</span> allow(
+<span class="k">pub func</span> decide_deploy(
     raw_port <span class="t">int</span>,
-    raw_hour <span class="t">int</span>,
-    raw_source <span class="t">string</span>,
-) <span class="t">bool</span> {
+    raw_region <span class="t">string</span>,
+    raw_rollout <span class="t">int</span>,
+) Decision {
     port := Port(raw_port)
-    hour := Hour(raw_hour)
-    source := SourceId(raw_source)
-    <span class="k">return</span> port == Port(443)
-        <span class="k">and</span> hour >= Hour(8)
-        <span class="k">and</span> source == SourceId(<span class="s">"sensor-a"</span>)
+    region := Region(raw_region)
+    rollout := RolloutPercent(raw_rollout)
+    <span class="k">if</span> port != Port(443) {
+        <span class="k">return</span> Decision.deny(<span class="s">"only https is allowed"</span>)
+    }
+    <span class="k">if</span> region != Region(<span class="s">"eu-west"</span>) {
+        <span class="k">return</span> Decision.deny(<span class="s">"region not enabled"</span>)
+    }
+    <span class="k">if</span> rollout > RolloutPercent(25) {
+        <span class="k">return</span> Decision.deny(<span class="s">"rollout exceeds safe limit"</span>)
+    }
+    <span class="k">return</span> Decision.allow
 }</code></pre>
                 <div class="examples-grid">
                     <div class="example-card">
